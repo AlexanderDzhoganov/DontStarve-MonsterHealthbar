@@ -1,4 +1,6 @@
 local require = GLOBAL.require
 
 local MonsterHealthbar = require "monsterhealthbar"
-AddSimPostInit(MonsterHealthbar)
+AddClassPostConstruct("widgets/controls", function(hud)
+	MonsterHealthbar(hud)
+end)

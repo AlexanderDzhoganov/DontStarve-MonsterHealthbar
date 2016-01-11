@@ -3,28 +3,33 @@ local ProgressBar = require "widgets/progressbar"
 local Util = require "mutil"
 local Config = require "modconfig"
 
-return function(player)
-  local container = Widget("RPGMonsterInfoContainer")
-  player.HUD.controls:AddChild(container)
-
+return function(controls)
+  local container = controls:AddChild(Widget("RPGMonsterInfoContainer"))
   container:SetHAnchor(ANCHOR_MIDDLE)
   container:SetVAnchor(ANCHOR_TOP)
-  container:SetPosition(0.0, -20.0, 0.0)
+  container:SetPosition(0.0, -26.0, 0.0)
   container:SetClickable(false)
   container:SetScaleMode(SCALEMODE_PROPORTIONAL)
 
-  local monsterHP = ProgressBar("", Config.font_size, Config.font, Config.width, Config.height, Config.color_hostile, container)
+  local monsterHP = container:AddChild(ProgressBar("", Config.font_size, Config.font, Config.width, Config.height, Config.color_hostile, container))
   monsterHP:Hide()
-  container:AddChild(monsterHP)
 
-  player:DoPeriodicTask(0, function()
+  local entity = CreateEntity()
+  entity:DoPeriodicTask(0, function()
     local inst = TheInput:GetWorldEntityUnderMouse()
     if inst == nil or inst.components.health == nil then
       monsterHP:Hide()
       return
     end
 
-    if inst == GetPlayer() then
+    local player = nil
+    if TheSim:GetGameID() == "DST" then
+      player = ThePlayer
+    else
+      player = GetPlayer()
+    end
+
+    if inst == player then
       monsterHP:Hide()
       return
     end
