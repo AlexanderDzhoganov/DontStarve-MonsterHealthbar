@@ -17,16 +17,27 @@ return function(controls)
   local entity = CreateEntity()
   entity:DoPeriodicTask(0, function()
     local inst = TheInput:GetWorldEntityUnderMouse()
-    if inst == nil or inst.components.health == nil then
+    if inst == nil then
       monsterHP:Hide()
       return
     end
-
+    
     local player = nil
+
     if TheSim:GetGameID() == "DST" then
       player = ThePlayer
+
+      if inst.replica == nil or inst.replica.health == nil then
+        monsterHP:Hide()
+        return
+      end
     else
       player = GetPlayer()
+
+      if inst.components.health == nil then
+        monsterHP:Hide()
+        return
+      end
     end
 
     if inst == player then
@@ -41,11 +52,24 @@ return function(controls)
     else
       monsterHP:SetColor(Config.color_friendly)
     end
-
-    local hp = inst.components.health.currenthealth
-    local maxHP = inst.components.health.maxhealth
-
+    
+    local hp = 10
+    local maxHP = 10
+    
+    if inst.components.health then
+      hp = inst.components.health.currenthealth
+      maxHP = inst.components.health.maxhealth
+    elseif inst.replica and inst.replica.health then
+      hp = inst.replica.health:GetCurrent()
+      maxHP = inst.replica.health:Max()
+    end
+    
     local name = Util.firstToUpper(inst.prefab)
+    
+    if inst.name ~= nil then
+      name = inst.name
+    end
+    
     if inst.components.named and inst.components.named.name then
       name = inst.components.named.name
     end
