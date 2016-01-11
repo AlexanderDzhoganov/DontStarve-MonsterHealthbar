@@ -32,7 +32,7 @@ local ProgressBar = Class(Widget, function(self, label, fontSize, font, width, h
 
     self.sublabel = self:AddChild(Text(font, fontSize - 4, ""))
     self.sublabel:SetHAlign(ANCHOR_MIDDLE)
-    self.sublabel:SetPosition(0.0, -24.0, 0.0)
+    self.sublabel:SetPosition(0.0, -fontSize - 2.0, 0.0)
 end)
 
 function ProgressBar:SetPercent(val)

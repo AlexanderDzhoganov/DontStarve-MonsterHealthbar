@@ -3,7 +3,35 @@ local ProgressBar = require "widgets/progressbar"
 local Util = require "mutil"
 local Config = require "modconfig"
 
-return function(controls)
+return function(controls, userConfig)
+  local width = 256
+  local height = 22
+
+  if userConfig.healthbarSize == "xs" then
+    width = 128
+    height = 14
+  elseif userConfig.healthbarSize == "small" then
+    width = 200
+    height = 18
+  elseif userConfig.healthbarSize == "large" then
+    width = 400
+    height = 32
+  end
+
+  if userConfig.wideHealthbar then
+    width = width * 1.6
+  end
+
+  local fontSize = 22
+
+  if userConfig.fontSize == "xs" then
+    fontSize = 12
+  elseif userConfig.fontSize == "small" then
+    fontSize = 16
+  elseif userConfig.fontSize == "large" then
+    fontSize = 28
+  end
+
   local container = controls:AddChild(Widget("RPGMonsterInfoContainer"))
   container:SetHAnchor(ANCHOR_MIDDLE)
   container:SetVAnchor(ANCHOR_TOP)
@@ -11,7 +39,7 @@ return function(controls)
   container:SetClickable(false)
   container:SetScaleMode(SCALEMODE_PROPORTIONAL)
 
-  local monsterHP = container:AddChild(ProgressBar("", Config.font_size, Config.font, Config.width, Config.height, Config.color_hostile, container))
+  local monsterHP = container:AddChild(ProgressBar("", fontSize, Config.font, width, height, Config.color_hostile, container))
   monsterHP:Hide()
 
   local entity = CreateEntity()
@@ -76,7 +104,7 @@ return function(controls)
 
     local text = name
 
-    if Config.show_health_text then
+    if userConfig.showHealthText then
       text = text .. " [ " .. hp .. " / " .. maxHP .. " ]"
     end
 
@@ -85,7 +113,7 @@ return function(controls)
     local percent = (hp / maxHP) * 100.0
     monsterHP:SetPercent(percent)
 
-    if not Config.show_traits_text then
+    if not userConfig.showTraitsText then
       return 
     end
 
