@@ -42,64 +42,86 @@ return function(controls, userConfig)
   local monsterHP = container:AddChild(ProgressBar("", fontSize, Config.font, width, height, Config.color_hostile, container))
   monsterHP:Hide()
 
+  local currentMonster = nil
+
   local entity = CreateEntity()
   entity:DoPeriodicTask(0, function()
     local inst = TheInput:GetWorldEntityUnderMouse()
-    if inst == nil then
-      monsterHP:Hide()
-      return
-    end
-    
+  
     local player = nil
 
     if TheSim:GetGameID() == "DST" then
       player = ThePlayer
 
-      if inst.replica == nil or inst.replica.health == nil then
-        monsterHP:Hide()
-        return
+      if inst ~= nil and inst.replica ~= nil and inst.replica.health ~= nil then
+        currentMonster = inst
       end
     else
       player = GetPlayer()
 
-      if inst.components.health == nil then
-        monsterHP:Hide()
-        return
+      if inst ~= nil and inst.components.health ~= nil and inst ~= player then
+        currentMonster = inst
       end
     end
 
-    if inst == player then
+    if currentMonster == nil then
       monsterHP:Hide()
       return
     end
 
-    monsterHP:Show()
+    local playerPos = Vector3(player.Transform:GetWorldPosition());
+    local monsterPos = Vector3(currentMonster.Transform:GetWorldPosition());
+    local dist = math.sqrt(distsq(playerPos, monsterPos))
 
-    if inst:HasTag("hostile") then
+    if dist <= 20.0 or inst == currentMonster then
+      monsterHP:Show()
+    else
+      monsterHP:Hide()
+      currentMonster = nil
+      return
+    end
+
+    if currentMonster:HasTag("hostile") then
       monsterHP:SetColor(Config.color_hostile)
     else
       monsterHP:SetColor(Config.color_friendly)
+    end
+
+    if currentMonster.components.combat and currentMonster.components.combat.target == player then
+      monsterHP:SetColor(Config.color_hostile)
     end
     
     local hp = 10
     local maxHP = 10
     
-    if inst.components.health then
-      hp = inst.components.health.currenthealth
-      maxHP = inst.components.health.maxhealth
-    elseif inst.replica and inst.replica.health then
-      hp = inst.replica.health:GetCurrent()
-      maxHP = inst.replica.health:Max()
+    if currentMonster.components.health then
+      hp = currentMonster.components.health.currenthealth
+      maxHP = currentMonster.components.health.maxhealth
+
+      if currentMonster.components.health:IsDead() then
+        currentMonster = nil
+        monsterHP:Hide()
+        return
+      end
+    elseif currentMonster.replica and currentMonster.replica.health then
+      hp = currentMonster.replica.health:GetCurrent()
+      maxHP = currentMonster.replica.health:Max()
+
+      if currentMonster.replica.health:IsDead() then
+        currentMonster = nil
+        monsterHP:Hide()
+        return
+      end
     end
     
-    local name = Util.firstToUpper(inst.prefab)
+    local name = Util.firstToUpper(currentMonster.prefab)
     
-    if inst.name ~= nil then
-      name = inst.name
+    if currentMonster.name ~= nil then
+      name = currentMonster.name
     end
     
-    if inst.components.named and inst.components.named.name then
-      name = inst.components.named.name
+    if currentMonster.components.named and currentMonster.components.named.name then
+      name = currentMonster.components.named.name
     end
 
     local text = name
@@ -119,29 +141,29 @@ return function(controls, userConfig)
 
     local subtext = ""
 
-    if not inst:HasTag("hostile") then
+    if not currentMonster:HasTag("hostile") then
       subtext = subtext .. "Friendly "
     end
 
-    if inst:HasTag("epic") then
+    if currentMonster:HasTag("epic") then
       subtext = subtext .. "Epic "
-    elseif inst:HasTag("smallcreature") then
+    elseif currentMonster:HasTag("smallcreature") then
         subtext = subtext .. "Small "
-    elseif inst:HasTag("largecreature") then
+    elseif currentMonster:HasTag("largecreature") then
       subtext = subtext .. "Large "
     end
 
-    if inst:HasTag("canbetrapped") then
+    if currentMonster:HasTag("canbetrapped") then
       subtext = subtext .. "Trappable "
     end
 
-    if inst:HasTag("monster") then
+    if currentMonster:HasTag("monster") then
       subtext = subtext .. "Monster "
-    elseif inst:HasTag("insect") then
+    elseif currentMonster:HasTag("insect") then
       subtext = subtext .. "Insect "
-    elseif inst:HasTag("bird") then
+    elseif currentMonster:HasTag("bird") then
       subtext = subtext .. "Bird "
-    elseif inst:HasTag("animal") then
+    elseif currentMonster:HasTag("animal") then
       subtext = subtext .. "Animal "
     end
 
