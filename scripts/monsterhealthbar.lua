@@ -4,6 +4,7 @@ local Util = require "mutil"
 local Config = require "modconfig"
 
 local currentMonster = nil
+local hideTimer = 0.0
 
 return {
   init = function(controls, userConfig)
@@ -44,8 +45,6 @@ return {
 
     local monsterHP = container:AddChild(ProgressBar("", fontSize, Config.font, width, height, Config.color_hostile, container))
     monsterHP:Hide()
-
-    local hideTimer = 0.0
 
     local entity = CreateEntity()
 
