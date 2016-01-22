@@ -4,7 +4,7 @@ name = "Monster Healthbars"
 description = "Healthbar for enemies"
 
 author = "nlight"
-version = "1.2a"
+version = "1.2c"
 
 forumthread = ""
 
